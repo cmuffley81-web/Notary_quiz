@@ -1,994 +1,1115 @@
 <!DOCTYPE html>
 <html lang="en" class="h-full">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Sound Fox Notary - Fee Quote Calculator</title>
-
-  <!-- Google Fonts: Cinzel (Serif Elegance), Inter (UI Sans), JetBrains Mono (Financial Numbers) -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            oxblood: {
-              950: '#150204',
-              900: '#2c0407',
-              800: '#4a090d',
-              700: '#6b0d13',
-              600: '#8e141c',
-            },
-            gold: {
-              100: '#fcf7ec',
-              200: '#f6ebd0',
-              300: '#ebd49f',
-              400: '#e2be7d',
-              500: '#c59b52',
-              600: '#a37c3b',
-              700: '#805f2a',
-            },
-            parchment: {
-              50: '#fbf8f3',
-              100: '#f3ede2',
-              200: '#e6dac7',
-              300: '#d7c4a8',
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Sound Fox Notary — Daily Practice</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        surface: {
+                            base: '#232520',
+                            card: '#2c2e28',
+                            hover: '#363831',
+                            border: '#3f423a',
+                            subtle: '#1d1f1c'
+                        },
+                        limeAcc: {
+                            DEFAULT: '#a3c93a',
+                            dark: '#86a82c',
+                            light: '#bce055',
+                            glow: 'rgba(163, 201, 58, 0.25)'
+                        },
+                        goldAcc: {
+                            DEFAULT: '#e8b84b',
+                            dark: '#c79930',
+                            light: '#f5cd71'
+                        },
+                        textMain: '#f5f5f2',
+                        textMuted: '#9ea197'
+                    }
+                }
             }
-          },
-          fontFamily: {
-            serif: ['Cinzel', 'Georgia', 'serif'],
-            sans: ['Inter', 'system-ui', 'sans-serif'],
-            mono: ['JetBrains Mono', 'monospace'],
-          }
         }
-      }
-    }
-  </script>
+    </script>
+    <style>
+        /* CSS Reset & Edge-to-Edge Layout Support */
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            height: 100dvh;
+            background-color: #232520;
+            color: #f5f5f2;
+            overflow-x: hidden;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
 
-  <style>
-    /* iOS Safe Area Insets Support */
-    .pb-safe { padding-bottom: max(1.25rem, env(safe-area-inset-bottom)); }
-    .pt-safe { padding-top: max(1rem, env(safe-area-inset-top)); }
+        /* Safe area support for iOS devices */
+        .safe-top-padding {
+            padding-top: max(0.75rem, env(safe-area-inset-top));
+        }
+        .safe-bottom-padding {
+            padding-bottom: max(1rem, env(safe-area-inset-bottom));
+        }
 
-    /* Custom scrollbars */
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(197, 155, 82, 0.3); border-radius: 9999px; }
-    ::-webkit-scrollbar-thumb:hover { background: rgba(197, 155, 82, 0.6); }
+        /* Custom Scrollbar styling */
+        ::-webkit-scrollbar {
+            height: 4px;
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #232520;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #3f423a;
+            border-radius: 4px;
+        }
 
-    /* Smooth theme transitions */
-    body, div, header, main, section, button, input, select {
-      transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
-    }
-  </style>
+        /* Slide-in Animations */
+        @keyframes slideDownFade {
+            from {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .animate-slide-down {
+            animation: slideDownFade 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 12px rgba(163, 201, 58, 0.2); }
+            50% { box-shadow: 0 0 22px rgba(163, 201, 58, 0.5); }
+        }
+        .badge-glow {
+            animation: pulseGlow 3s infinite ease-in-out;
+        }
+    </style>
 </head>
-<body class="h-full bg-parchment-50 text-stone-800 dark:bg-oxblood-950 dark:text-parchment-50 font-sans antialiased selection:bg-gold-400 selection:text-oxblood-900 flex flex-col">
+<body class="flex flex-col h-full bg-surface-base text-textMain selection:bg-limeAcc selection:text-surface-base">
 
-  <!-- TOP HEADER & BRANDING -->
-  <header class="bg-oxblood-800 border-b border-gold-500/30 text-parchment-50 sticky top-0 z-40 shadow-lg">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-3">
-      
-      <!-- Logo & Title -->
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-gold-300 via-gold-400 to-gold-600 flex items-center justify-center shadow-md border border-gold-200">
-          <!-- Fox & Stamp Emblem SVG -->
-          <svg class="w-6 h-6 text-oxblood-900" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 2L2 9l10 7 10-7-10-7zm0 9.5L5.5 7 12 4.5 18.5 7 12 11.5zM3 13.5l3.5 2.5L3 18.5v-5zm18 0v5l-3.5-2.5 3.5-2.5zM12 15l-6 4.2V21l6-2 6 2v-1.8L12 15z"/>
-          </svg>
-        </div>
-        <div>
-          <h1 class="font-serif text-lg sm:text-xl font-bold tracking-wide text-gold-300 flex items-center gap-2">
-            SOUND FOX NOTARY
-            <span class="text-[10px] font-sans font-semibold uppercase tracking-widest px-2 py-0.5 rounded bg-gold-500/20 text-gold-300 border border-gold-400/30">WA State</span>
-          </h1>
-          <p class="text-xs text-parchment-200 font-light">Official Fee Quote & Travel Calculator</p>
-        </div>
-      </div>
-
-      <!-- Header Controls: Quick Presets & Theme Switcher -->
-      <div class="flex items-center gap-2 sm:gap-3 ml-auto">
-        <button id="btnDemo98155" onclick="applyDemo98155Preset()" class="text-xs px-3 py-1.5 rounded-lg bg-oxblood-900 hover:bg-oxblood-700 text-gold-300 border border-gold-500/40 font-medium transition-all shadow-sm flex items-center gap-1.5">
-          <span>📍</span> <span>98155 Demo</span>
-        </button>
-        <button id="btnReset" onclick="resetCalculator()" class="text-xs px-2.5 py-1.5 rounded-lg bg-oxblood-900/60 hover:bg-oxblood-900 text-stone-300 border border-stone-600 font-medium transition-all">
-          Reset
-        </button>
-
-        <!-- Dynamic Theme Selector -->
-        <div class="relative inline-flex bg-oxblood-900/80 p-1 rounded-lg border border-gold-500/30">
-          <button onclick="setTheme('light')" id="themeBtnLight" title="Light Theme (Ivory & Crimson)" class="p-1.5 rounded text-xs transition-colors text-stone-400 hover:text-gold-300">
-            ☀️ <span class="hidden sm:inline ml-1 font-mono text-[11px]">Light</span>
-          </button>
-          <button onclick="setTheme('dark')" id="themeBtnDark" title="Dark Theme (Deep Oxblood & Gold)" class="p-1.5 rounded text-xs transition-colors text-stone-400 hover:text-gold-300">
-            🌙 <span class="hidden sm:inline ml-1 font-mono text-[11px]">Dark</span>
-          </button>
-          <button onclick="setTheme('auto')" id="themeBtnAuto" title="Auto (System Theme)" class="p-1.5 rounded text-xs transition-colors text-stone-400 hover:text-gold-300">
-            💻 <span class="hidden sm:inline ml-1 font-mono text-[11px]">Auto</span>
-          </button>
-        </div>
-      </div>
-
-    </div>
-  </header>
-
-  <!-- MAIN APP CONTAINER -->
-  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-6 pb-safe">
-
-    <!-- LEFT COLUMN: CONTROLS & OPTIONS (8 cols on lg) -->
-    <div class="lg:col-span-7 space-y-6">
-
-      <!-- SECTION 1: SERVICE TIER SELECTION -->
-      <section class="bg-white dark:bg-oxblood-900/90 rounded-2xl p-5 border border-stone-200 dark:border-gold-500/20 shadow-md">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="font-serif text-base sm:text-lg font-bold text-oxblood-800 dark:text-gold-300 flex items-center gap-2">
-            <span class="w-6 h-6 rounded-full bg-gold-400/20 text-gold-600 dark:text-gold-400 text-xs flex items-center justify-center font-bold">1</span>
-            Select Primary Service Tier
-          </h2>
-          <span class="text-xs font-mono text-stone-500 dark:text-parchment-300">Base Rates</span>
+    <!-- TOP HEADER BAR (Flush Top & Safe Area Aware) -->
+    <header class="w-full bg-[#1d1f1c] border-b border-surface-border px-3 sm:px-4 py-3 flex items-center justify-between sticky top-0 z-50 safe-top-padding shadow-md">
+        <!-- Left Brand & Badge -->
+        <div class="flex items-center gap-2.5">
+            <div class="w-10 h-10 rounded-full bg-limeAcc flex items-center justify-center text-surface-base font-black shadow-lg badge-glow shrink-0">
+                <!-- Trophy Icon SVG -->
+                <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                    <path d="M19,5h-2V3H7v2H5C3.9,5,3,5.9,3,7v1c0,2.55,1.92,4.63,4.39,4.94C8.07,14.32,9.86,15.5,12,15.5s3.93-1.18,4.61-2.56 C19.08,12.63,21,10.55,21,8V7C21,5.9,20.1,5,19,5z M5,8V7h2v3.82C5.84,10.4,5,9.3,5,8z M19,8c0,1.3-0.84,2.4-2,2.82V7h2V8z M12,17 c-1.66,0-3,1.34-3,3v1h6v-1C15,18.34,13.66,17,12,17z"/>
+                </svg>
+            </div>
+            <div class="leading-tight">
+                <h1 class="text-sm font-bold tracking-wide text-textMain uppercase flex items-center gap-1.5">
+                    Sound Fox Notary
+                </h1>
+                <p class="text-[10px] font-semibold tracking-widest text-limeAcc uppercase">Daily Practice</p>
+            </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="serviceTierGrid">
-
-          <!-- Standard RON -->
-          <label class="relative flex flex-col p-4 rounded-xl border-2 cursor-pointer transition-all bg-parchment-50/50 dark:bg-oxblood-950/40 border-stone-200 dark:border-oxblood-700 hover:border-gold-400" id="cardTierStandardRon">
-            <input type="radio" name="serviceTier" value="standard_ron" class="sr-only" onchange="calculateTotal()" checked />
-            <div class="flex justify-between items-start mb-1">
-              <span class="font-bold text-sm text-oxblood-900 dark:text-parchment-50">Standard Digital RON</span>
-              <span class="font-mono font-bold text-sm text-gold-600 dark:text-gold-400">$45.00</span>
-            </div>
-            <p class="text-xs text-stone-500 dark:text-parchment-300">Remote Online Notarization session</p>
-            <div class="mt-2 text-[11px] font-mono text-stone-400 dark:text-stone-400">
-              Breakdown: $25 Act + $20 ID Proofing
-            </div>
-          </label>
-
-          <!-- Priority RON -->
-          <label class="relative flex flex-col p-4 rounded-xl border-2 cursor-pointer transition-all bg-parchment-50/50 dark:bg-oxblood-950/40 border-stone-200 dark:border-oxblood-700 hover:border-gold-400" id="cardTierPriorityRon">
-            <input type="radio" name="serviceTier" value="priority_ron" class="sr-only" onchange="calculateTotal()" />
-            <div class="flex justify-between items-start mb-1">
-              <span class="font-bold text-sm text-oxblood-900 dark:text-parchment-50 flex items-center gap-1.5">
-                Priority RON
-                <span class="text-[10px] bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-200 px-1.5 py-0.2 rounded font-mono font-normal">Rush</span>
-              </span>
-              <span class="font-mono font-bold text-sm text-gold-600 dark:text-gold-400">$65.00</span>
-            </div>
-            <p class="text-xs text-stone-500 dark:text-parchment-300">On-demand expedited digital dispatch</p>
-            <div class="mt-2 text-[11px] font-mono text-stone-400 dark:text-stone-400">
-              Breakdown: $25 Act + $20 ID + $15 Rush + $5 Priority
-            </div>
-          </label>
-
-          <!-- Mobile IPEN -->
-          <label class="relative flex flex-col p-4 rounded-xl border-2 cursor-pointer transition-all bg-parchment-50/50 dark:bg-oxblood-950/40 border-stone-200 dark:border-oxblood-700 hover:border-gold-400" id="cardTierMobileIpen">
-            <input type="radio" name="serviceTier" value="mobile_ipen" class="sr-only" onchange="calculateTotal()" />
-            <div class="flex justify-between items-start mb-1">
-              <span class="font-bold text-sm text-oxblood-900 dark:text-parchment-50">Mobile IPEN</span>
-              <span class="font-mono font-bold text-sm text-gold-600 dark:text-gold-400">$45.00 <span class="text-xs font-normal text-stone-400">+ Travel</span></span>
-            </div>
-            <p class="text-xs text-stone-500 dark:text-parchment-300">In-person Electronic (Weekends Only)</p>
-            <div class="mt-2 text-[11px] font-mono text-stone-400 dark:text-stone-400">
-              Breakdown: $25 Act + $20 ID Proofing
-            </div>
-          </label>
-
-          <!-- Mobile Pen & Paper -->
-          <label class="relative flex flex-col p-4 rounded-xl border-2 cursor-pointer transition-all bg-parchment-50/50 dark:bg-oxblood-950/40 border-stone-200 dark:border-oxblood-700 hover:border-gold-400" id="cardTierMobilePaper">
-            <input type="radio" name="serviceTier" value="mobile_paper" class="sr-only" onchange="calculateTotal()" />
-            <div class="flex justify-between items-start mb-1">
-              <span class="font-bold text-sm text-oxblood-900 dark:text-parchment-50">Mobile Pen & Paper</span>
-              <span class="font-mono font-bold text-sm text-gold-600 dark:text-gold-400">$15.00 <span class="text-xs font-normal text-stone-400">+ Travel</span></span>
-            </div>
-            <p class="text-xs text-stone-500 dark:text-parchment-300">Traditional Ink (Weekends Only)</p>
-            <div class="mt-2 text-[11px] font-mono text-stone-400 dark:text-stone-400">
-              Breakdown: $15 Statutory Act
-            </div>
-          </label>
-
-        </div>
-      </section>
-
-      <!-- SECTION 2: RIDESHARE & TRANSIT TRAVEL CALCULATOR -->
-      <section id="travelSection" class="bg-white dark:bg-oxblood-900/90 rounded-2xl p-5 border border-stone-200 dark:border-gold-500/20 shadow-md">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="font-serif text-base sm:text-lg font-bold text-oxblood-800 dark:text-gold-300 flex items-center gap-2">
-            <span class="w-6 h-6 rounded-full bg-gold-400/20 text-gold-600 dark:text-gold-400 text-xs flex items-center justify-center font-bold">2</span>
-            Travel & Location Calculator
-          </h2>
-          <span class="text-xs px-2 py-0.5 rounded bg-stone-100 dark:bg-oxblood-800 text-stone-600 dark:text-parchment-200 font-mono">Mobile Services</span>
-        </div>
-
-        <div class="space-y-4">
-          <!-- Destination Tag Input -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label class="block text-xs font-semibold uppercase tracking-wider text-stone-600 dark:text-parchment-300 mb-1">Destination ZIP / City</label>
-              <input type="text" id="destZipInput" value="98155 (Shoreline)" oninput="calculateTotal()" class="w-full px-3 py-2 text-sm rounded-lg border border-stone-300 dark:border-oxblood-700 bg-white dark:bg-oxblood-950 text-stone-800 dark:text-parchment-100 focus:ring-2 focus:ring-gold-400 outline-none" placeholder="e.g. 98155" />
+        <!-- Right Controls: Streak, Score, Sound -->
+        <div class="flex items-center gap-1.5 sm:gap-2">
+            <!-- Streak Pill -->
+            <div class="flex items-center gap-1 bg-surface-card border border-surface-border px-2.5 py-1 rounded-full text-xs font-bold text-goldAcc shadow-sm">
+                <svg class="w-3.5 h-3.5 fill-current text-goldAcc animate-pulse" viewBox="0 0 24 24">
+                    <path d="M13.5 0.67c-0.5 0.44-0.95 0.94-1.35 1.49C10.65 4.14 10 6.13 10 8.25c0 0.46 0.04 0.92 0.12 1.36-0.65-0.55-1.19-1.25-1.57-2.05-0.34-0.72-0.52-1.52-0.52-2.35 0-0.32 0.03-0.64 0.08-0.95-2.09 1.41-3.48 3.78-3.48 6.49 0 4.28 3.47 7.75 7.75 7.75s7.75-3.47 7.75-7.75c0-4.04-3.04-7.39-6.9-7.72 0.12 0.31 0.18 0.64 0.18 0.98 0 1.25-0.54 2.37-1.41 3.16 0.36-0.98 0.54-2.04 0.54-3.14 0-1.21-0.24-2.36-0.67-3.41z"/>
+                </svg>
+                <span id="streakCount">0</span>
             </div>
 
-            <div>
-              <label class="block text-xs font-semibold uppercase tracking-wider text-stone-600 dark:text-parchment-300 mb-1">Travel Rate Method</label>
-              <div class="grid grid-cols-2 gap-1 bg-stone-100 dark:bg-oxblood-950 p-1 rounded-lg border border-stone-200 dark:border-oxblood-700">
-                <button type="button" id="btnTravelTypeFlat" onclick="setTravelType('flat')" class="py-1.5 text-xs font-medium rounded transition-all">
-                  Standard ($35)
-                </button>
-                <button type="button" id="btnTravelTypeRideshare" onclick="setTravelType('rideshare')" class="py-1.5 text-xs font-medium rounded transition-all">
-                  Rideshare Fare
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Custom Rideshare Options Panel (Visible when rideshare selected) -->
-          <div id="ridesharePanel" class="p-4 rounded-xl bg-gold-50/50 dark:bg-oxblood-950/80 border border-gold-400/30 space-y-3">
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label class="block text-xs font-semibold text-oxblood-900 dark:text-gold-300 mb-1">Rideshare Fare Amount ($)</label>
-                <div class="relative">
-                  <span class="absolute left-3 top-2.5 text-stone-400 text-sm font-mono">$</span>
-                  <input type="number" id="rideshareFareInput" step="0.01" value="24.33" oninput="calculateTotal()" class="w-full pl-7 pr-3 py-2 text-sm font-mono rounded-lg border border-stone-300 dark:border-oxblood-700 bg-white dark:bg-oxblood-900 text-stone-800 dark:text-parchment-100 focus:ring-2 focus:ring-gold-400 outline-none" />
-                </div>
-              </div>
-
-              <div>
-                <label class="block text-xs font-semibold text-oxblood-900 dark:text-gold-300 mb-1">Fare Calculation Mode</label>
-                <select id="fareModeSelect" onchange="calculateTotal()" class="w-full px-3 py-2 text-xs rounded-lg border border-stone-300 dark:border-oxblood-700 bg-white dark:bg-oxblood-900 text-stone-800 dark:text-parchment-100 focus:ring-2 focus:ring-gold-400 outline-none">
-                  <option value="oneway">One-Way Fare (Auto 2x Round-Trip)</option>
-                  <option value="roundtrip">Total Round-Trip Fare (1x)</option>
-                </select>
-              </div>
+            <!-- Score Pill -->
+            <div class="flex items-center gap-1 bg-surface-card border border-surface-border px-2.5 py-1 rounded-full text-xs font-bold text-limeAcc shadow-sm">
+                <svg class="w-3.5 h-3.5 fill-current text-limeAcc" viewBox="0 0 24 24">
+                    <path d="M12 2l2.4 7.4h7.6l-6.2 4.5 2.4 7.4-6.2-4.5-6.2 4.5 2.4-7.4-6.2-4.5h7.6z"/>
+                </svg>
+                <span id="roundScore">0/5</span>
             </div>
 
-            <!-- Wait / Surge Buffer Switch -->
-            <div class="flex items-center justify-between pt-1">
-              <label for="toggleSurgeBuffer" class="text-xs text-stone-700 dark:text-parchment-200 flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" id="toggleSurgeBuffer" onchange="calculateTotal()" class="w-4 h-4 rounded text-gold-500 focus:ring-gold-400 border-stone-300" checked />
-                <span>Add 10% Wait / Peak Surge Buffer</span>
-              </label>
-              <span id="surgeBufferCalculatedText" class="text-xs font-mono text-gold-600 dark:text-gold-400">+$4.87</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- SECTION 3: WITNESS & BLUENOTARY POOL CONTROLS -->
-      <section class="bg-white dark:bg-oxblood-900/90 rounded-2xl p-5 border border-stone-200 dark:border-gold-500/20 shadow-md">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="font-serif text-base sm:text-lg font-bold text-oxblood-800 dark:text-gold-300 flex items-center gap-2">
-            <span class="w-6 h-6 rounded-full bg-gold-400/20 text-gold-600 dark:text-gold-400 text-xs flex items-center justify-center font-bold">3</span>
-            Witness & Open Call Pool
-          </h2>
-          <span class="text-xs font-mono px-2 py-0.5 rounded bg-oxblood-800/10 dark:bg-gold-500/20 text-oxblood-900 dark:text-gold-300">WAC 308-30-220 Compliance</span>
-        </div>
-
-        <div class="space-y-4">
-          <!-- Statutory Witness Counter -->
-          <div class="p-4 rounded-xl bg-parchment-50/60 dark:bg-oxblood-950/40 border border-stone-200 dark:border-oxblood-700 flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <div class="flex items-center gap-2">
-                <span class="font-bold text-sm text-oxblood-900 dark:text-parchment-50">Witnessing / Attesting Signature</span>
-                <span id="witnessStatutoryBadge" class="text-[11px] font-mono font-semibold px-2 py-0.5 rounded bg-gold-400/20 text-gold-700 dark:text-gold-300 border border-gold-500/30">
-                  WAC 308-30-220: $25.00/act
-                </span>
-              </div>
-              <p class="text-xs text-stone-500 dark:text-parchment-300 mt-0.5">Physical or digital witnessing required by document terms</p>
-            </div>
-
-            <!-- Stepper controls -->
-            <div class="flex items-center gap-3">
-              <button type="button" onclick="changeCounter('witnessCount', -1)" class="w-8 h-8 rounded-lg bg-stone-200 dark:bg-oxblood-800 text-stone-800 dark:text-parchment-100 font-bold hover:bg-gold-400 hover:text-oxblood-900 transition-colors flex items-center justify-center text-base">
-                -
-              </button>
-              <span id="witnessCountDisplay" class="w-6 text-center font-mono font-bold text-base text-oxblood-900 dark:text-gold-300">0</span>
-              <button type="button" onclick="changeCounter('witnessCount', 1)" class="w-8 h-8 rounded-lg bg-stone-200 dark:bg-oxblood-800 text-stone-800 dark:text-parchment-100 font-bold hover:bg-gold-400 hover:text-oxblood-900 transition-colors flex items-center justify-center text-base">
-                +
-              </button>
-            </div>
-          </div>
-
-          <!-- BlueNotary Open Witness Call Pool Switch -->
-          <div class="p-4 rounded-xl bg-parchment-50/60 dark:bg-oxblood-950/40 border border-stone-200 dark:border-oxblood-700 space-y-3">
-            <div class="flex items-center justify-between">
-              <div class="flex items-start gap-2.5">
-                <input type="checkbox" id="toggleBnPool" onchange="calculateTotal()" class="mt-1 w-4 h-4 rounded text-gold-500 focus:ring-gold-400 border-stone-300" />
-                <div>
-                  <label for="toggleBnPool" class="font-bold text-sm text-oxblood-900 dark:text-parchment-50 cursor-pointer flex items-center gap-2">
-                    BlueNotary Open Witness Call Pool
-                    <span class="text-[10px] bg-blue-100 dark:bg-blue-900/60 text-blue-800 dark:text-blue-200 px-1.5 py-0.2 rounded font-mono font-normal">RON On-Demand</span>
-                  </label>
-                  <p class="text-xs text-stone-500 dark:text-parchment-300 mt-0.5">Dispatches an on-demand witness from the BlueNotary network pool</p>
-                </div>
-              </div>
-              <span class="font-mono font-bold text-sm text-gold-600 dark:text-gold-400" id="bnPoolDisplayFee">$10.00</span>
-            </div>
-
-            <!-- Custom BN Pool Fee Input -->
-            <div id="bnPoolFeeInputWrapper" class="hidden flex items-center justify-between text-xs pt-2 border-t border-stone-200 dark:border-oxblood-800">
-              <span class="text-stone-600 dark:text-parchment-300">Pass-Through Pool Fee ($):</span>
-              <input type="number" id="bnPoolFeeInput" step="1.00" value="10.00" oninput="calculateTotal()" class="w-24 px-2 py-1 text-right font-mono text-xs rounded border border-stone-300 dark:border-oxblood-700 bg-white dark:bg-oxblood-900 text-stone-800 dark:text-parchment-100 outline-none" />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- SECTION 4: ADDITIONAL STAMPS, SIGNERS & ADD-ONS -->
-      <section class="bg-white dark:bg-oxblood-900/90 rounded-2xl p-5 border border-stone-200 dark:border-gold-500/20 shadow-md">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="font-serif text-base sm:text-lg font-bold text-oxblood-800 dark:text-gold-300 flex items-center gap-2">
-            <span class="w-6 h-6 rounded-full bg-gold-400/20 text-gold-600 dark:text-gold-400 text-xs flex items-center justify-center font-bold">4</span>
-            Additional Acts, Signers & Options
-          </h2>
-          <span class="text-xs font-mono text-stone-500 dark:text-parchment-300">Itemized Add-Ons</span>
-        </div>
-
-        <div class="space-y-4">
-          <!-- Stepper Grid: Extra Acts & Extra Signers -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            
-            <!-- Extra Acts / Stamps -->
-            <div class="p-3.5 rounded-xl bg-parchment-50/60 dark:bg-oxblood-950/40 border border-stone-200 dark:border-oxblood-700 flex items-center justify-between">
-              <div>
-                <span class="block text-xs font-bold text-oxblood-900 dark:text-parchment-50">Additional Acts / Stamps</span>
-                <span id="extraActsRateText" class="text-[11px] font-mono text-stone-500 dark:text-parchment-300">$25.00 each</span>
-              </div>
-              <div class="flex items-center gap-2.5">
-                <button type="button" onclick="changeCounter('extraActsCount', -1)" class="w-7 h-7 rounded bg-stone-200 dark:bg-oxblood-800 text-stone-800 dark:text-parchment-100 font-bold hover:bg-gold-400 hover:text-oxblood-900 transition-colors flex items-center justify-center text-sm">-</button>
-                <span id="extraActsCountDisplay" class="w-5 text-center font-mono font-bold text-sm text-oxblood-900 dark:text-gold-300">0</span>
-                <button type="button" onclick="changeCounter('extraActsCount', 1)" class="w-7 h-7 rounded bg-stone-200 dark:bg-oxblood-800 text-stone-800 dark:text-parchment-100 font-bold hover:bg-gold-400 hover:text-oxblood-900 transition-colors flex items-center justify-center text-sm">+</button>
-              </div>
-            </div>
-
-            <!-- Extra Signers -->
-            <div class="p-3.5 rounded-xl bg-parchment-50/60 dark:bg-oxblood-950/40 border border-stone-200 dark:border-oxblood-700 flex items-center justify-between">
-              <div>
-                <span class="block text-xs font-bold text-oxblood-900 dark:text-parchment-50">Extra Signers</span>
-                <span class="text-[11px] font-mono text-stone-500 dark:text-parchment-300">$20.00 each</span>
-              </div>
-              <div class="flex items-center gap-2.5">
-                <button type="button" onclick="changeCounter('extraSignersCount', -1)" class="w-7 h-7 rounded bg-stone-200 dark:bg-oxblood-800 text-stone-800 dark:text-parchment-100 font-bold hover:bg-gold-400 hover:text-oxblood-900 transition-colors flex items-center justify-center text-sm">-</button>
-                <span id="extraSignersCountDisplay" class="w-5 text-center font-mono font-bold text-sm text-oxblood-900 dark:text-gold-300">0</span>
-                <button type="button" onclick="changeCounter('extraSignersCount', 1)" class="w-7 h-7 rounded bg-stone-200 dark:bg-oxblood-800 text-stone-800 dark:text-parchment-100 font-bold hover:bg-gold-400 hover:text-oxblood-900 transition-colors flex items-center justify-center text-sm">+</button>
-              </div>
-            </div>
-
-          </div>
-
-          <!-- Quick Toggle Add-Ons -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <label class="flex items-center justify-between p-3.5 rounded-xl bg-parchment-50/60 dark:bg-oxblood-950/40 border border-stone-200 dark:border-oxblood-700 cursor-pointer">
-              <div class="flex items-center gap-2.5">
-                <input type="checkbox" id="toggleRush" onchange="calculateTotal()" class="w-4 h-4 rounded text-gold-500 focus:ring-gold-400 border-stone-300" />
-                <span class="text-xs font-bold text-oxblood-900 dark:text-parchment-50">Off-Hours / Expedited Surcharge</span>
-              </div>
-              <span class="font-mono text-xs font-bold text-gold-600 dark:text-gold-400">+$15.00</span>
-            </label>
-
-            <label class="flex items-center justify-between p-3.5 rounded-xl bg-parchment-50/60 dark:bg-oxblood-950/40 border border-stone-200 dark:border-oxblood-700 cursor-pointer">
-              <div class="flex items-center gap-2.5">
-                <input type="checkbox" id="togglePrintScan" onchange="calculateTotal()" class="w-4 h-4 rounded text-gold-500 focus:ring-gold-400 border-stone-300" />
-                <span class="text-xs font-bold text-oxblood-900 dark:text-parchment-50">Printing / Scanback Fee</span>
-              </div>
-              <span class="font-mono text-xs font-bold text-gold-600 dark:text-gold-400">+$10.00</span>
-            </label>
-          </div>
-
-          <!-- Custom Line Item Input -->
-          <div class="p-3.5 rounded-xl bg-parchment-50/60 dark:bg-oxblood-950/40 border border-stone-200 dark:border-oxblood-700">
-            <span class="block text-xs font-semibold uppercase tracking-wider text-stone-600 dark:text-parchment-300 mb-2">Custom Line Item / Fee (Optional)</span>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-              <input type="text" id="customItemLabel" placeholder="Item description (e.g. Courier Fee)" oninput="calculateTotal()" class="sm:col-span-2 px-3 py-1.5 text-xs rounded border border-stone-300 dark:border-oxblood-700 bg-white dark:bg-oxblood-900 text-stone-800 dark:text-parchment-100 outline-none" />
-              <div class="relative">
-                <span class="absolute left-2.5 top-1.5 text-stone-400 text-xs font-mono">$</span>
-                <input type="number" id="customItemAmount" step="0.50" value="0.00" oninput="calculateTotal()" class="w-full pl-6 pr-2 py-1.5 text-xs font-mono rounded border border-stone-300 dark:border-oxblood-700 bg-white dark:bg-oxblood-900 text-stone-800 dark:text-parchment-100 outline-none" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-    </div>
-
-    <!-- RIGHT COLUMN: LIVE BREAKDOWN & CLIENT QUOTE GENERATOR (5 cols on lg) -->
-    <div class="lg:col-span-5 space-y-6">
-
-      <div class="sticky top-20 space-y-6">
-
-        <!-- GRAND TOTAL & BREAKDOWN CARD -->
-        <section class="bg-oxblood-900 text-parchment-50 rounded-2xl p-6 border-2 border-gold-400/40 shadow-xl relative overflow-hidden">
-          
-          <!-- Background Gold Accent Flare -->
-          <div class="absolute -right-12 -top-12 w-32 h-32 rounded-full bg-gold-400/10 blur-2xl pointer-events-none"></div>
-
-          <div class="flex items-center justify-between pb-4 border-b border-gold-500/30">
-            <div>
-              <span class="text-xs uppercase tracking-widest text-gold-400 font-semibold">Total Estimated Quote</span>
-              <h2 id="totalQuoteDisplay" class="font-mono text-3xl sm:text-4xl font-extrabold text-gold-300 mt-1">$45.00</h2>
-            </div>
-            <div class="text-right">
-              <span id="publishedRateRangeBadge" class="inline-block text-[11px] font-mono font-semibold px-2.5 py-1 rounded-full bg-gold-500/20 text-gold-300 border border-gold-400/40">
-                Published Benchmark Match
-              </span>
-            </div>
-          </div>
-
-          <!-- Live Itemized Breakdown List -->
-          <div class="py-4 space-y-2.5 text-xs font-mono" id="breakdownList">
-            <!-- Dynamic JS injected lines -->
-          </div>
-
-          <!-- Action Buttons -->
-          <div class="pt-4 border-t border-gold-500/30 space-y-2">
-            <button id="btnCopyQuote" onclick="copyClientQuote()" class="w-full py-3 px-4 rounded-xl font-serif font-bold text-sm bg-gradient-to-r from-gold-300 via-gold-400 to-gold-500 text-oxblood-950 hover:from-gold-200 hover:to-gold-400 transition-all shadow-lg flex items-center justify-center gap-2">
-              <svg class="w-4 h-4 text-oxblood-950" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/>
-              </svg>
-              <span>Copy Client Quote (SMS/Email)</span>
+            <!-- Audio Toggle Button -->
+            <button id="audioToggleBtn" onclick="toggleAudio()" aria-label="Toggle Sound Effects" class="w-8 h-8 rounded-full bg-surface-card border border-surface-border hover:bg-surface-hover flex items-center justify-center text-textMuted transition-colors">
+                <svg id="audioIconOn" class="w-4 h-4 fill-current text-limeAcc" viewBox="0 0 24 24">
+                    <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                </svg>
+                <svg id="audioIconOff" class="w-4 h-4 fill-current text-textMuted hidden" viewBox="0 0 24 24">
+                    <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73 4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+                </svg>
             </button>
+        </div>
+    </header>
 
-            <!-- Toast / Copy Confirmation Message -->
-            <div id="copyToast" class="hidden text-center text-xs text-gold-300 font-medium py-1.5 px-3 rounded bg-gold-500/20 border border-gold-400/30">
-              ✓ Quote copied to clipboard cleanly!
+    <!-- TOPIC FILTER PILLS (Horizontally Scrollable) -->
+    <nav class="w-full bg-surface-base border-b border-surface-border py-2.5 px-3 overflow-x-auto whitespace-nowrap no-scrollbar flex items-center gap-2">
+        <button onclick="setTopicFilter('all')" data-topic="all" class="topic-btn active px-3.5 py-1.5 rounded-full text-xs font-semibold bg-limeAcc text-surface-base transition-all shadow-sm">
+            All Topics
+        </button>
+        <button onclick="setTopicFilter('WA Stamp & Seal')" data-topic="WA Stamp & Seal" class="topic-btn px-3.5 py-1.5 rounded-full text-xs font-semibold bg-surface-card border border-surface-border text-textMuted hover:text-textMain hover:bg-surface-hover transition-all">
+            WA Stamp & Seal
+        </button>
+        <button onclick="setTopicFilter('Journal Rules')" data-topic="Journal Rules" class="topic-btn px-3.5 py-1.5 rounded-full text-xs font-semibold bg-surface-card border border-surface-border text-textMuted hover:text-textMain hover:bg-surface-hover transition-all">
+            Journal Rules
+        </button>
+        <button onclick="setTopicFilter('ID & Credible Witnesses')" data-topic="ID & Credible Witnesses" class="topic-btn px-3.5 py-1.5 rounded-full text-xs font-semibold bg-surface-card border border-surface-border text-textMuted hover:text-textMain hover:bg-surface-hover transition-all">
+            ID & Witnesses
+        </button>
+        <button onclick="setTopicFilter('Acknowledgments & Jurats')" data-topic="Acknowledgments & Jurats" class="topic-btn px-3.5 py-1.5 rounded-full text-xs font-semibold bg-surface-card border border-surface-border text-textMuted hover:text-textMain hover:bg-surface-hover transition-all">
+            Acks & Jurats
+        </button>
+        <button onclick="setTopicFilter('Fees & Refusals')" data-topic="Fees & Refusals" class="topic-btn px-3.5 py-1.5 rounded-full text-xs font-semibold bg-surface-card border border-surface-border text-textMuted hover:text-textMain hover:bg-surface-hover transition-all">
+            Fees & Refusals
+        </button>
+    </nav>
+
+    <!-- MAIN VIEW AREA -->
+    <main class="flex-1 w-full max-w-2xl mx-auto flex flex-col justify-between px-4 py-4 overflow-y-auto safe-bottom-padding">
+
+        <!-- PRACTICE QUESTION CONTAINER -->
+        <div id="quizView" class="flex-1 flex flex-col justify-between">
+            <!-- Top Section: Progress Bar & Question Card -->
+            <div>
+                <!-- 5-Segment Round Progress Bar -->
+                <div class="mb-5">
+                    <div class="flex items-center justify-between mb-1.5 text-xs text-textMuted font-medium">
+                        <span>Round Progress</span>
+                        <span id="progressText">Question 1 of 5</span>
+                    </div>
+                    <div class="grid grid-cols-5 gap-1.5 h-2 w-full">
+                        <div id="segment-0" class="h-full rounded-full bg-surface-border transition-all duration-300"></div>
+                        <div id="segment-1" class="h-full rounded-full bg-surface-border transition-all duration-300"></div>
+                        <div id="segment-2" class="h-full rounded-full bg-surface-border transition-all duration-300"></div>
+                        <div id="segment-3" class="h-full rounded-full bg-surface-border transition-all duration-300"></div>
+                        <div id="segment-4" class="h-full rounded-full bg-surface-border transition-all duration-300"></div>
+                    </div>
+                </div>
+
+                <!-- Category Tag & Question Card -->
+                <div class="bg-surface-card border border-surface-border rounded-xl p-4 sm:p-5 shadow-md mb-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <span id="questionCategory" class="px-2.5 py-1 rounded-md text-[11px] font-bold tracking-wide uppercase bg-limeAcc/10 text-limeAcc border border-limeAcc/20">
+                            WA Stamp & Seal
+                        </span>
+                        <span id="questionLawRef" class="text-[11px] font-mono text-textMuted">
+                            RCW 42.45
+                        </span>
+                    </div>
+                    <h2 id="questionText" class="text-base sm:text-lg font-semibold leading-snug text-textMain">
+                        Loading practice question...
+                    </h2>
+                </div>
+
+                <!-- Option Buttons Grid -->
+                <div id="optionsContainer" class="flex flex-col gap-2.5 mb-4">
+                    <!-- Option items generated via JS -->
+                </div>
+
+                <!-- Interactive RCW / WAC Explanation Card (Hidden initially) -->
+                <div id="explanationCard" class="hidden bg-surface-subtle border border-surface-border rounded-xl p-4 mb-4 animate-slide-down">
+                    <div class="flex items-start gap-2.5">
+                        <div id="explanationIcon" class="w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5 font-bold text-xs">
+                            <!-- Icon populated dynamically -->
+                        </div>
+                        <div>
+                            <div id="explanationTitle" class="text-xs font-bold uppercase tracking-wider mb-1">
+                                Statutory Breakdown
+                            </div>
+                            <p id="explanationText" class="text-xs sm:text-sm text-textMain/90 leading-relaxed">
+                                Detailed explanation text...
+                            </p>
+                        </div>
+                    </div>
+                </div>
             </div>
-          </div>
 
-        </section>
-
-        <!-- FORMATTED TEXT PREVIEW BOX -->
-        <section class="bg-white dark:bg-oxblood-900/90 rounded-2xl p-5 border border-stone-200 dark:border-gold-500/20 shadow-md">
-          <div class="flex items-center justify-between mb-3">
-            <h3 class="font-serif text-sm font-bold text-oxblood-900 dark:text-gold-300 uppercase tracking-wider">
-              Client Message Preview
-            </h3>
-            <span class="text-[10px] text-stone-400 font-mono">No Em-Dashes</span>
-          </div>
-          <pre id="quoteTextPreview" class="w-full p-3 rounded-lg bg-parchment-50 dark:bg-oxblood-950 border border-stone-200 dark:border-oxblood-800 text-[11px] font-mono text-stone-700 dark:text-parchment-200 leading-relaxed whitespace-pre-wrap break-words max-h-64 overflow-y-auto">
-          </pre>
-        </section>
-
-        <!-- FOOTER & LEGAL NOTE -->
-        <div class="text-[11px] text-stone-500 dark:text-stone-400 space-y-1 px-1">
-          <p><strong>Sound Fox Notary</strong> | Independent Notary Public Services in Washington State.</p>
-          <p>Notary fees capped under WAC 308-30-220 ($25/act RON or IPEN, $15/act Pen & Paper). Travel and credential proofing are non-statutory service fees agreed upon prior to signing.</p>
+            <!-- Bottom Action Controls -->
+            <div id="actionBtnContainer" class="pt-2 sticky bottom-0 bg-surface-base">
+                <button id="nextBtn" onclick="handleNextQuestion()" disabled class="w-full py-3.5 px-5 rounded-xl font-bold text-sm bg-surface-hover text-textMuted cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2 shadow-lg">
+                    <span>Select an Answer</span>
+                    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                        <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
         </div>
 
-      </div>
+        <!-- END OF ROUND RESULTS SCREEN (Hidden by default) -->
+        <div id="resultsView" class="hidden flex-1 flex flex-col justify-between py-2">
+            <div class="flex-1 flex flex-col items-center justify-center text-center px-2">
+                <!-- Large Trophy Badge -->
+                <div class="w-20 h-20 rounded-full bg-limeAcc/15 border-2 border-limeAcc flex items-center justify-center text-limeAcc mb-4 shadow-xl badge-glow">
+                    <svg class="w-10 h-10 fill-current text-limeAcc" viewBox="0 0 24 24">
+                        <path d="M19,5h-2V3H7v2H5C3.9,5,3,5.9,3,7v1c0,2.55,1.92,4.63,4.39,4.94C8.07,14.32,9.86,15.5,12,15.5s3.93-1.18,4.61-2.56 C19.08,12.63,21,10.55,21,8V7C21,5.9,20.1,5,19,5z M5,8V7h2v3.82C5.84,10.4,5,9.3,5,8z M19,8c0,1.3-0.84,2.4-2,2.82V7h2V8z M12,17 c-1.66,0-3,1.34-3,3v1h6v-1C15,18.34,13.66,17,12,17z"/>
+                    </svg>
+                </div>
 
-    </div>
+                <h2 id="resultsHeadline" class="text-2xl font-black text-textMain mb-1">
+                    Flawless Knowledge!
+                </h2>
+                <p id="resultsSubhead" class="text-xs text-limeAcc font-bold tracking-widest uppercase mb-6">
+                    Round Complete • Sound Fox Practice
+                </p>
 
-  </main>
+                <!-- Score Summary Cards -->
+                <div class="grid grid-cols-2 gap-3 w-full max-w-sm mb-6">
+                    <div class="bg-surface-card border border-surface-border p-4 rounded-xl text-center shadow-sm">
+                        <div class="text-xs text-textMuted uppercase font-semibold mb-1">Round Score</div>
+                        <div id="resultsScore" class="text-2xl font-black text-limeAcc">5 / 5</div>
+                    </div>
+                    <div class="bg-surface-card border border-surface-border p-4 rounded-xl text-center shadow-sm">
+                        <div class="text-xs text-textMuted uppercase font-semibold mb-1">Accuracy</div>
+                        <div id="resultsAccuracy" class="text-2xl font-black text-goldAcc">100%</div>
+                    </div>
+                </div>
 
-  <!-- JAVASCRIPT APP LOGIC -->
-  <script>
-    // State variables
-    let currentTheme = 'auto';
-    let travelType = 'flat'; // 'flat' or 'rideshare'
-    let counters = {
-      witnessCount: 0,
-      extraActsCount: 0,
-      extraSignersCount: 0
-    };
+                <!-- Dynamic Motivational Message Box -->
+                <div class="bg-surface-card border border-surface-border rounded-xl p-4 max-w-sm w-full text-left mb-6 shadow-sm">
+                    <div class="flex items-center gap-2 mb-1.5 text-xs font-bold text-limeAcc uppercase">
+                        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                        </svg>
+                        <span>Performance Analysis</span>
+                    </div>
+                    <p id="resultsFeedbackText" class="text-xs sm:text-sm text-textMain/90 leading-relaxed">
+                        You have shown strong command over Washington State statutory requirements.
+                    </p>
+                </div>
 
-    // Initialize application on window load
-    window.onload = function() {
-      initTheme();
-      calculateTotal();
-    };
+                <!-- Missed Questions Accordion / List Container (if any) -->
+                <div id="missedQuestionsSection" class="w-full max-w-sm mb-6 text-left hidden">
+                    <h3 class="text-xs font-bold text-textMuted uppercase tracking-wider mb-2 flex items-center justify-between">
+                        <span>Review Missed Questions</span>
+                        <span id="missedCountBadge" class="bg-red-500/20 text-red-400 text-[10px] px-2 py-0.5 rounded-full border border-red-500/30">0</span>
+                    </h3>
+                    <div id="missedQuestionsList" class="flex flex-col gap-2 max-h-48 overflow-y-auto pr-1">
+                        <!-- Dynamic items -->
+                    </div>
+                </div>
+            </div>
 
-    // --- THEME MANAGEMENT ---
-    function initTheme() {
-      const savedTheme = localStorage.getItem('soundfox_theme') || 'auto';
-      setTheme(savedTheme);
-    }
+            <!-- Results Action Buttons -->
+            <div class="flex flex-col gap-2.5 w-full max-w-sm mx-auto pt-2">
+                <button onclick="startNewRound()" class="w-full py-3.5 px-5 rounded-xl font-bold text-sm bg-limeAcc hover:bg-limeAcc-light text-surface-base transition-all shadow-lg flex items-center justify-center gap-2 active:scale-98">
+                    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                        <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-0.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14 0.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+                    </svg>
+                    <span>Play Another Round</span>
+                </button>
+            </div>
+        </div>
 
-    function setTheme(theme) {
-      currentTheme = theme;
-      localStorage.setItem('soundfox_theme', theme);
+    </main>
 
-      const html = document.documentElement;
-      const btnLight = document.getElementById('themeBtnLight');
-      const btnDark = document.getElementById('themeBtnDark');
-      const btnAuto = document.getElementById('themeBtnAuto');
+    <!-- JAVASCRIPT APP ENGINE -->
+    <script>
+        /* ==========================================================================
+           1. QUESTION BANK (28 Authentic Washington State RCW 42.45 / WAC 308-30 Questions)
+           ========================================================================== */
+        const QUESTION_BANK = [
+            {
+                id: 1,
+                category: "WA Stamp & Seal",
+                lawRef: "RCW 42.45.150 / WAC 308-30-070",
+                question: "What are the approved dimensions and shape requirements for an official Washington State notary seal stamp?",
+                options: [
+                    "Circular (max 1-5/8\" diameter) or Rectangular (max 1\" x 2-5/8\") with a outer border",
+                    "Any square stamp provided it includes the state seal of Washington",
+                    "Circular only (minimum 2 inches diameter) with gold foil backing",
+                    "Rectangular only (maximum 2\" x 3\") without border restrictions"
+                ],
+                correctIndex: 0,
+                explanation: "Under WAC 308-30-070, a notary seal must be either circular (maximum 1-5/8 inches in diameter) or rectangular (maximum 1 inch high by 2-5/8 inches wide) and enclosed in a border."
+            },
+            {
+                id: 2,
+                category: "WA Stamp & Seal",
+                lawRef: "RCW 42.45.150",
+                question: "Which specific detail MUST be included on a Washington notary public's official stamp?",
+                options: [
+                    "Notary's home residential address and telephone number",
+                    "Notary's name as commissioned, 'State of Washington', 'Notary Public', and commission expiration date",
+                    "The Washington State Governor's official signature",
+                    "The notary's personal driver's license number"
+                ],
+                correctIndex: 1,
+                explanation: "RCW 42.45.150 requires the seal to state the notary's name as commissioned, the words 'State of Washington', 'Notary Public', and the commission expiration date."
+            },
+            {
+                id: 3,
+                category: "WA Stamp & Seal",
+                lawRef: "RCW 42.45.150(6)",
+                question: "Upon resignation, revocation, or expiration of a notary commission without renewal, what must be done with the stamp?",
+                options: [
+                    "Surrender it to the county clerk's office",
+                    "Deface or destroy the seal as soon as practical so it cannot be misused",
+                    "Mail it to the Secretary of State within 60 days",
+                    "Keep it in a safe deposit box for 10 years without defacing"
+                ],
+                correctIndex: 1,
+                explanation: "RCW 42.45.150(6) mandates that upon resignation, expiration, or revocation of a commission, the notary seal must be defaced or destroyed so it can no longer be used."
+            },
+            {
+                id: 4,
+                category: "Journal Rules",
+                lawRef: "RCW 42.45.180(1)",
+                question: "How long must a Washington notary retain their notary journal after the last performance of a notarial act?",
+                options: [
+                    "3 years from the date of the entry",
+                    "5 years after commission expiration",
+                    "10 years after the performance of the last notarial act recorded",
+                    "Permanently for life"
+                ],
+                correctIndex: 2,
+                explanation: "RCW 42.45.180(1) states that a notary public must maintain a journal for 10 years after the performance of the last notarial act recorded in the journal."
+            },
+            {
+                id: 5,
+                category: "Journal Rules",
+                lawRef: "RCW 42.45.180 / WAC 308-30-090",
+                question: "Is keeping a notary journal mandatory for all traditional notary acts in Washington State?",
+                options: [
+                    "Yes, a journal is mandatory for all notarial acts performed under Washington law",
+                    "No, keeping a journal is purely optional under WA state law",
+                    "Only required for real property deeds and mortgage loan signings",
+                    "Required only if charging fees above $5.00"
+                ],
+                correctIndex: 0,
+                explanation: "Under RCW 42.45.180 and WAC 308-30-090, maintaining a journal is mandatory for all notarial acts conducted by Washington state notaries public."
+            },
+            {
+                id: 6,
+                category: "Journal Rules",
+                lawRef: "RCW 42.45.180(6)",
+                question: "If a notary's journal is lost or stolen, what action must the notary take?",
+                options: [
+                    "Promptly notify the Washington State Department of Licensing (DOL)",
+                    "File a report with the local police and take no further action",
+                    "Wait until commission renewal time to inform the licensing board",
+                    "Publish a public notice in the local county newspaper"
+                ],
+                correctIndex: 0,
+                explanation: "RCW 42.45.180(6) mandates that if a notary's journal is lost or stolen, the notary public must promptly notify the Department of Licensing upon discovery."
+            },
+            {
+                id: 7,
+                category: "Journal Rules",
+                lawRef: "RCW 42.45.180(3)",
+                question: "If an employer pays for a notary's commission and journal, who owns the journal if the notary leaves employment?",
+                options: [
+                    "The employer retains ownership of the journal",
+                    "The journal remains the exclusive personal property of the notary public",
+                    "The journal must be turned over to the Department of Licensing",
+                    "The employer and notary share joint ownership"
+                ],
+                correctIndex: 1,
+                explanation: "RCW 42.45.180(3) specifies that a notary journal is the exclusive personal property of the notary public, regardless of whether the employer paid for it."
+            },
+            {
+                id: 8,
+                category: "ID & Credible Witnesses",
+                lawRef: "RCW 42.45.050(2)",
+                question: "Under Washington State law, can an expired driver's license be accepted as satisfactory evidence of identity?",
+                options: [
+                    "No, identification documents must be strictly unexpired",
+                    "Yes, provided it is issued by a US state/territory and expired within the past 3 years",
+                    "Yes, regardless of how long ago it expired as long as the photo matches",
+                    "Only if accompanied by a credit card and utility bill"
+                ],
+                correctIndex: 1,
+                explanation: "RCW 42.45.050(2) allows a government-issued ID that is current or expired not more than 3 years before performance of the notarial act, containing a photo and signature."
+            },
+            {
+                id: 9,
+                category: "ID & Credible Witnesses",
+                lawRef: "RCW 42.45.050(2)(b)",
+                question: "How many credible witnesses are required to establish identity if the signer lacks acceptable government ID?",
+                options: [
+                    "Three witnesses who reside in the same county",
+                    "Either ONE credible witness personally known to notary, OR TWO witnesses with valid government IDs",
+                    "Always exactly two credible witnesses regardless of personal acquaintance",
+                    "Credible witnesses are not recognized under Washington notary law"
+                ],
+                correctIndex: 1,
+                explanation: "RCW 42.45.050(2)(b) allows identity verification by verification on oath or affirmation of ONE credible witness personally known to the notary OR TWO credible witnesses producing valid ID."
+            },
+            {
+                id: 10,
+                category: "ID & Credible Witnesses",
+                lawRef: "RCW 42.45.050",
+                question: "Which of the following qualifies as a valid 'Credible Witness' under Washington notary practice?",
+                options: [
+                    "A person with a direct financial benefit in the contract",
+                    "An impartial individual who personally knows the principal signer and has no beneficial interest",
+                    "A stranger who agrees to sign after seeing the principal's social security card",
+                    "The notary public's immediate business partner who receives a commission fee"
+                ],
+                correctIndex: 1,
+                explanation: "A credible witness must be honest and impartial, personally acquainted with the signer, and free of any financial or beneficial interest in the transaction."
+            },
+            {
+                id: 11,
+                category: "Acknowledgments & Jurats",
+                lawRef: "RCW 42.45.010(1)",
+                question: "What is the primary difference between an Acknowledgment and a Jurat?",
+                options: [
+                    "Acknowledgments require an oath; Jurats only require a signature",
+                    "Acknowledgments verify a voluntary signature (can be signed prior); Jurats require signing in front of notary under oath/affirmation",
+                    "Jurats can only be used on real estate deeds",
+                    "There is no difference under Washington law"
+                ],
+                correctIndex: 1,
+                explanation: "An Acknowledgment declares that a signature was made voluntarily (and may be signed prior to appearing). A Jurat requires the signer to sign IN THE NOTARY'S PRESENCE under oath or affirmation regarding truthfulness."
+            },
+            {
+                id: 12,
+                category: "Acknowledgments & Jurats",
+                lawRef: "RCW 42.45.010(10)",
+                question: "When performing a Jurat, what step MUST the notary complete BEFORE the principal signs the document?",
+                options: [
+                    "Collect the notarization fee in cash",
+                    "Administer a verbal oath or affirmation asserting the truth of the document statements",
+                    "Send a copy to the county auditor",
+                    "Verify the principal's credit report"
+                ],
+                correctIndex: 1,
+                explanation: "For a Jurat (verification upon oath or affirmation), the notary MUST administer a formal oath or affirmation to the signer affirming the truth of the contents before signing."
+            },
+            {
+                id: 13,
+                category: "Acknowledgments & Jurats",
+                lawRef: "RCW 42.45.130",
+                question: "If a document lacks pre-printed notarial certificate wording, what should the notary do?",
+                options: [
+                    "Decide independently which certificate is best and attach it",
+                    "Refuse the notarization completely and void the document",
+                    "Ask the signer (or document originator) to select the appropriate certificate type (Ack or Jurat)",
+                    "Write 'Notarized' across the signature line"
+                ],
+                correctIndex: 2,
+                explanation: "Notaries cannot choose the type of notarial certificate, as doing so constitutes the unauthorized practice of law. The signer or document issuer must specify which certificate to attach."
+            },
+            {
+                id: 14,
+                category: "Fees & Refusals",
+                lawRef: "WAC 308-30-220",
+                question: "What is the statutory MAXIMUM fee a Washington notary public may charge for taking an in-person acknowledgment?",
+                options: [
+                    "$5.00 per signature",
+                    "$10.00 per signature",
+                    "$15.00 per signature",
+                    "There is no statutory cap in Washington State"
+                ],
+                correctIndex: 1,
+                explanation: "WAC 308-30-220 sets the maximum statutory fee for taking an acknowledgment, administering an oath/affirmation, or witnessing a signature at $10.00 per act."
+            },
+            {
+                id: 15,
+                category: "Fees & Refusals",
+                lawRef: "RCW 42.45.060",
+                question: "When MUST a Washington notary refuse to perform a requested notarial act?",
+                options: [
+                    "When the signer is not a resident of Washington State",
+                    "When the notary suspects the signer is incapacitated, coerced, or lacks voluntary intent",
+                    "When the document is written in English",
+                    "When the notarization takes place outside standard business hours"
+                ],
+                correctIndex: 1,
+                explanation: "RCW 42.45.060 states a notary may (and must) refuse to perform a notarial act if not satisfied that the individual is competent, acting of their own free will, or if identity is not verified."
+            },
+            {
+                id: 16,
+                category: "Fees & Refusals",
+                lawRef: "WAC 308-30-220(2)",
+                question: "May a Washington notary charge a separate travel fee for mobile notary service?",
+                options: [
+                    "No, travel fees are strictly illegal under Washington law",
+                    "Yes, provided the travel fee is agreed upon in advance by the client and itemized separately",
+                    "Yes, but only if the travel exceeds 50 miles round trip",
+                    "Only with written permission from the Department of Licensing"
+                ],
+                correctIndex: 1,
+                explanation: "WAC 308-30-220 allows notaries to charge a travel fee provided it is agreed upon in advance with the client and listed separately from official statutory notary fees."
+            },
+            {
+                id: 17,
+                category: "WA Stamp & Seal",
+                lawRef: "WAC 308-30-070",
+                question: "Can an embossed seal impression replace an official ink stamp seal in Washington State?",
+                options: [
+                    "Yes, an embosser is preferred over ink stamps",
+                    "No, an embosser may be used in ADDITION to, but NOT in place of, an ink stamp",
+                    "Yes, for court documents only",
+                    "No, embossers are completely prohibited in Washington"
+                ],
+                correctIndex: 1,
+                explanation: "Under WAC 308-30-070, an embossed seal may be used in conjunction with an official ink stamp, but cannot serve as a replacement for the ink stamp."
+            },
+            {
+                id: 18,
+                category: "ID & Credible Witnesses",
+                lawRef: "RCW 42.45.050",
+                question: "Which identification document is NOT acceptable as primary satisfactory evidence of identity in Washington?",
+                options: [
+                    "A valid US Passport or Passport Card",
+                    "A foreign passport stamped by US Citizenship and Immigration Services",
+                    "An unverified employee ID badge without photo or security feature",
+                    "A state driver's license issued by California"
+                ],
+                correctIndex: 2,
+                explanation: "An unverified employee badge lacking proper government standards or photo/signature controls does not meet RCW 42.45.050 requirements for satisfactory identity evidence."
+            },
+            {
+                id: 19,
+                category: "Fees & Refusals",
+                lawRef: "RCW 42.45.040",
+                question: "May a notary public perform a notarial act on a transaction in which the notary is named as a party or beneficiary?",
+                options: [
+                    "Yes, if the notary discloses it in the journal",
+                    "No, a notary has a disqualifying interest and cannot notarize transactions where they have a direct beneficial interest",
+                    "Yes, as long as the fee charged is standard",
+                    "Only if notarizing for a spouse"
+                ],
+                correctIndex: 1,
+                explanation: "RCW 42.45.040 prohibits a notary from performing any notarial act in which the notary or their spouse/domestic partner is a named party or has a direct beneficial interest."
+            },
+            {
+                id: 20,
+                category: "Acknowledgments & Jurats",
+                lawRef: "RCW 42.45.070",
+                question: "If a signer is physically unable to sign their name due to disability, how may they execute the document?",
+                options: [
+                    "The notary can sign the signer's name without witnesses",
+                    "By making a mark (X) witnessed by two disinterested individuals, or signature by proxy at direction of principal",
+                    "The document cannot be notarized under Washington law",
+                    "A relative must sign their own name instead"
+                ],
+                correctIndex: 1,
+                explanation: "RCW 42.45.070 permits a principal physically unable to sign to make a mark or direct another individual (proxy) to sign on their behalf in the notary's presence."
+            },
+            {
+                id: 21,
+                category: "Fees & Refusals",
+                lawRef: "RCW 42.45.230",
+                question: "Can a non-attorney notary public give advice on which legal form a client should use?",
+                options: [
+                    "Yes, if the notary has over 5 years experience",
+                    "No, giving legal advice or selecting legal forms constitutes the unauthorized practice of law",
+                    "Yes, provided no legal fee is charged",
+                    "Only if the client requests verbal advice"
+                ],
+                correctIndex: 1,
+                explanation: "RCW 42.45.230 explicitly states that a non-attorney notary public may not practice law, give legal advice, or select legal documents for clients."
+            },
+            {
+                id: 22,
+                category: "Journal Rules",
+                lawRef: "WAC 308-30-090",
+                question: "Which of the following entries MUST be recorded in a notary journal entry for each notarial act?",
+                options: [
+                    "Date & time, type of act, document description, full name & signature of signer, fee, and ID method",
+                    "Signer's full credit card number and banking institution",
+                    "Signer's Social Security Number and full thumbprint",
+                    "Only the date and client phone number"
+                ],
+                correctIndex: 0,
+                explanation: "WAC 308-30-090 mandates recording date/time, type of act, description of document, full name & signature of each principal, identity method, and fee charged."
+            },
+            {
+                id: 23,
+                category: "WA Stamp & Seal",
+                lawRef: "WAC 308-30-070",
+                question: "What ink color is required for an official Washington notary seal stamp?",
+                options: [
+                    "Red or purple ink only",
+                    "Black or dark blue ink capable of being legibly reproduced by photo copy/scan",
+                    "Gold or metallic ink",
+                    "Any light color including yellow"
+                ],
+                correctIndex: 1,
+                explanation: "WAC 308-30-070 requires black or dark blue ink that can be clearly photographed or scanned for public record."
+            },
+            {
+                id: 24,
+                category: "Acknowledgments & Jurats",
+                lawRef: "RCW 42.45.020",
+                question: "In a representative capacity acknowledgment (e.g. Corporate Officer or Power of Attorney), what does the signer acknowledge?",
+                options: [
+                    "That they own 100% of the company",
+                    "That they signed the record with proper authority as the representative of the entity",
+                    "That they will personally pay all debts of the entity",
+                    "That they witnessed the notary sign"
+                ],
+                correctIndex: 1,
+                explanation: "In a representative capacity, the individual acknowledges executing the document voluntarily with authorized capacity on behalf of the represented entity."
+            },
+            {
+                id: 25,
+                category: "Fees & Refusals",
+                lawRef: "WAC 308-30-220",
+                question: "What is the maximum statutory fee allowed for administering an oath or affirmation without a signature?",
+                options: [
+                    "$5.00",
+                    "$10.00",
+                    "$12.00",
+                    "$20.00"
+                ],
+                correctIndex: 1,
+                explanation: "Under WAC 308-30-220, the maximum fee for administering an oath or affirmation is $10.00."
+            }
+        ];
 
-      // Reset button styles
-      [btnLight, btnDark, btnAuto].forEach(btn => {
-        btn.classList.remove('bg-gold-500', 'text-oxblood-950', 'font-bold');
-        btn.classList.add('text-stone-400');
-      });
+        /* ==========================================================================
+           2. APP STATE & LOCAL STORAGE MANAGEMENT
+           ========================================================================== */
+        let activeFilter = 'all';
+        let currentRoundQuestions = [];
+        let currentQuestionIndex = 0;
+        let selectedOptionIndex = null;
+        let roundScore = 0;
+        let missedQuestions = [];
+        let streak = parseInt(localStorage.getItem('soundfox_streak') || '0', 10);
+        let audioEnabled = localStorage.getItem('soundfox_audio') !== 'false';
 
-      let isDark = false;
+        // Web Audio Synthesizer Context
+        let audioCtx = null;
 
-      if (theme === 'light') {
-        isDark = false;
-        btnLight.classList.add('bg-gold-500', 'text-oxblood-950', 'font-bold');
-      } else if (theme === 'dark') {
-        isDark = true;
-        btnDark.classList.add('bg-gold-500', 'text-oxblood-950', 'font-bold');
-      } else {
-        // Auto
-        btnAuto.classList.add('bg-gold-500', 'text-oxblood-950', 'font-bold');
-        isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-      }
-
-      if (isDark) {
-        html.classList.add('dark');
-      } else {
-        html.classList.remove('dark');
-      }
-    }
-
-    // --- TRAVEL TYPE SWITCH ---
-    function setTravelType(type) {
-      travelType = type;
-      const btnFlat = document.getElementById('btnTravelTypeFlat');
-      const btnRideshare = document.getElementById('btnTravelTypeRideshare');
-      const ridesharePanel = document.getElementById('ridesharePanel');
-
-      if (type === 'flat') {
-        btnFlat.className = 'py-1.5 text-xs font-medium rounded transition-all bg-gold-400 text-oxblood-950 font-bold shadow-sm';
-        btnRideshare.className = 'py-1.5 text-xs font-medium rounded transition-all text-stone-600 dark:text-parchment-300 hover:text-gold-500';
-        ridesharePanel.classList.add('hidden');
-      } else {
-        btnRideshare.className = 'py-1.5 text-xs font-medium rounded transition-all bg-gold-400 text-oxblood-950 font-bold shadow-sm';
-        btnFlat.className = 'py-1.5 text-xs font-medium rounded transition-all text-stone-600 dark:text-parchment-300 hover:text-gold-500';
-        ridesharePanel.classList.remove('hidden');
-      }
-
-      calculateTotal();
-    }
-
-    // --- COUNTERS STEPPER LOGIC ---
-    function changeCounter(key, delta) {
-      if (counters[key] !== undefined) {
-        counters[key] = Math.max(0, counters[key] + delta);
-        const displayEl = document.getElementById(key + 'Display');
-        if (displayEl) {
-          displayEl.innerText = counters[key];
+        function initAudio() {
+            if (!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (AudioContext) {
+                    audioCtx = new AudioContext();
+                }
+            }
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
         }
-        calculateTotal();
-      }
-    }
 
-    // --- 98155 DEMO PRESET ---
-    function applyDemo98155Preset() {
-      // Set service tier to Mobile IPEN
-      const radioMobileIpen = document.querySelector('input[name="serviceTier"][value="mobile_ipen"]');
-      if (radioMobileIpen) radioMobileIpen.checked = true;
-
-      // Set ZIP & Travel to Rideshare
-      document.getElementById('destZipInput').value = '98155 (Shoreline)';
-      setTravelType('rideshare');
-      document.getElementById('rideshareFareInput').value = '24.33';
-      document.getElementById('fareModeSelect').value = 'oneway';
-      document.getElementById('toggleSurgeBuffer').checked = true;
-
-      // Counters
-      counters.witnessCount = 1;
-      counters.extraActsCount = 0;
-      counters.extraSignersCount = 0;
-      document.getElementById('witnessCountDisplay').innerText = '1';
-      document.getElementById('extraActsCountDisplay').innerText = '0';
-      document.getElementById('extraSignersCountDisplay').innerText = '0';
-
-      // Toggles
-      document.getElementById('toggleBnPool').checked = false;
-      document.getElementById('toggleRush').checked = true;
-      document.getElementById('togglePrintScan').checked = false;
-
-      // Custom Item
-      document.getElementById('customItemLabel').value = '';
-      document.getElementById('customItemAmount').value = '0.00';
-
-      calculateTotal();
-    }
-
-    // --- RESET CALCULATOR ---
-    function resetCalculator() {
-      const radioStandardRon = document.querySelector('input[name="serviceTier"][value="standard_ron"]');
-      if (radioStandardRon) radioStandardRon.checked = true;
-
-      document.getElementById('destZipInput').value = '98155 (Shoreline)';
-      setTravelType('flat');
-      document.getElementById('rideshareFareInput').value = '24.33';
-      document.getElementById('fareModeSelect').value = 'oneway';
-      document.getElementById('toggleSurgeBuffer').checked = true;
-
-      counters.witnessCount = 0;
-      counters.extraActsCount = 0;
-      counters.extraSignersCount = 0;
-      document.getElementById('witnessCountDisplay').innerText = '0';
-      document.getElementById('extraActsCountDisplay').innerText = '0';
-      document.getElementById('extraSignersCountDisplay').innerText = '0';
-
-      document.getElementById('toggleBnPool').checked = false;
-      document.getElementById('toggleRush').checked = false;
-      document.getElementById('togglePrintScan').checked = false;
-
-      document.getElementById('customItemLabel').value = '';
-      document.getElementById('customItemAmount').value = '0.00';
-
-      calculateTotal();
-    }
-
-    // --- MAIN CALCULATION & QUOTE GENERATION ---
-    function calculateTotal() {
-      const serviceTierInput = document.querySelector('input[name="serviceTier"]:checked');
-      const selectedTier = serviceTierInput ? serviceTierInput.value : 'standard_ron';
-
-      // Update Service Tier Selected Styling Cards
-      ['StandardRon', 'PriorityRon', 'MobileIpen', 'MobilePaper'].forEach(tierName => {
-        const card = document.getElementById('cardTier' + tierName);
-        if (card) {
-          card.classList.remove('border-gold-500', 'bg-gold-50/20', 'dark:bg-oxblood-900');
-          card.classList.add('border-stone-200', 'dark:border-oxblood-700');
+        /* ==========================================================================
+           3. SOUND EFFECTS SYNTHESIZER (Web Audio API)
+           ========================================================================== */
+        function toggleAudio() {
+            audioEnabled = !audioEnabled;
+            localStorage.setItem('soundfox_audio', audioEnabled);
+            updateAudioUI();
+            if (audioEnabled) {
+                initAudio();
+                playChime(600, 0.05, 'sine');
+            }
         }
-      });
 
-      let currentCardId = 'cardTierStandardRon';
-      if (selectedTier === 'priority_ron') currentCardId = 'cardTierPriorityRon';
-      if (selectedTier === 'mobile_ipen') currentCardId = 'cardTierMobileIpen';
-      if (selectedTier === 'mobile_paper') currentCardId = 'cardTierMobilePaper';
-      
-      const activeCard = document.getElementById(currentCardId);
-      if (activeCard) {
-        activeCard.classList.remove('border-stone-200', 'dark:border-oxblood-700');
-        activeCard.classList.add('border-gold-500', 'bg-gold-50/20', 'dark:bg-oxblood-900');
-      }
-
-      // Determine statutory act rate for current selection
-      const isRemoteOrDigital = (selectedTier === 'standard_ron' || selectedTier === 'priority_ron' || selectedTier === 'mobile_ipen');
-      const statutoryActRate = isRemoteOrDigital ? 25.00 : 15.00;
-
-      // Update Witness Statutory Badge Text
-      const witnessBadge = document.getElementById('witnessStatutoryBadge');
-      if (witnessBadge) {
-        witnessBadge.innerText = `WAC 308-30-220: $${statutoryActRate.toFixed(2)}/act`;
-      }
-
-      // Update Extra Acts Rate Text
-      const extraActsRateText = document.getElementById('extraActsRateText');
-      if (extraActsRateText) {
-        extraActsRateText.innerText = `$${statutoryActRate.toFixed(2)} each`;
-      }
-
-      // Travel Section Visibility / Relevance
-      const isMobileService = (selectedTier === 'mobile_ipen' || selectedTier === 'mobile_paper');
-      const travelSection = document.getElementById('travelSection');
-      if (travelSection) {
-        if (isMobileService) {
-          travelSection.classList.remove('opacity-60');
-        } else {
-          travelSection.classList.add('opacity-60');
+        function updateAudioUI() {
+            const iconOn = document.getElementById('audioIconOn');
+            const iconOff = document.getElementById('audioIconOff');
+            if (audioEnabled) {
+                iconOn.classList.remove('hidden');
+                iconOff.classList.add('hidden');
+            } else {
+                iconOn.classList.add('hidden');
+                iconOff.classList.remove('hidden');
+            }
         }
-      }
 
-      // Base Cost Calculation
-      let baseCost = 0.00;
-      let baseTitle = '';
-      let baseBreakdown = [];
+        function playChime(freq, duration, type = 'sine') {
+            if (!audioEnabled) return;
+            initAudio();
+            if (!audioCtx) return;
 
-      if (selectedTier === 'standard_ron') {
-        baseCost = 45.00;
-        baseTitle = 'Standard Digital RON Session';
-        baseBreakdown.push({ name: 'Statutory Notarial Act (WAC 308-30-220)', cost: 25.00 });
-        baseBreakdown.push({ name: 'Digital ID Proofing & Credential Analysis', cost: 20.00 });
-      } else if (selectedTier === 'priority_ron') {
-        baseCost = 65.00;
-        baseTitle = 'Priority / On-Demand RON Session';
-        baseBreakdown.push({ name: 'Statutory Notarial Act (WAC 308-30-220)', cost: 25.00 });
-        baseBreakdown.push({ name: 'Digital ID Proofing & Credential Analysis', cost: 20.00 });
-        baseBreakdown.push({ name: 'Expedited Rush Dispatch', cost: 15.00 });
-        baseBreakdown.push({ name: 'Priority Handling Fee', cost: 5.00 });
-      } else if (selectedTier === 'mobile_ipen') {
-        baseCost = 45.00;
-        baseTitle = 'Mobile IPEN (In-Person Electronic)';
-        baseBreakdown.push({ name: 'Statutory Notarial Act (WAC 308-30-220)', cost: 25.00 });
-        baseBreakdown.push({ name: 'Digital ID Proofing & Credential Analysis', cost: 20.00 });
-      } else if (selectedTier === 'mobile_paper') {
-        baseCost = 15.00;
-        baseTitle = 'Mobile Pen & Paper (Ink Notarization)';
-        baseBreakdown.push({ name: 'Statutory Notarial Act (WAC 308-30-220)', cost: 15.00 });
-      }
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
 
-      // Travel Fee Calculation
-      let travelFee = 0.00;
-      let travelLabel = '';
-      const destZip = document.getElementById('destZipInput').value.trim() || '98155';
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
 
-      if (isMobileService) {
-        if (travelType === 'flat') {
-          travelFee = 35.00;
-          travelLabel = `Standard Travel Fee (${destZip})`;
-        } else {
-          const fareInputVal = parseFloat(document.getElementById('rideshareFareInput').value) || 0;
-          const fareMode = document.getElementById('fareModeSelect').value;
-          const hasSurge = document.getElementById('toggleSurgeBuffer').checked;
+                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
 
-          let rawFare = (fareMode === 'oneway') ? (fareInputVal * 2) : fareInputVal;
-          let surgeAmount = hasSurge ? (rawFare * 0.10) : 0;
-          
-          travelFee = rawFare + surgeAmount;
-          
-          // Update calculation text helper
-          const surgeText = document.getElementById('surgeBufferCalculatedText');
-          if (surgeText) {
-            surgeText.innerText = `+$${surgeAmount.toFixed(2)}`;
-          }
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
 
-          travelLabel = `Rideshare Travel (${destZip})`;
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch(e) {
+                console.error(e);
+            }
         }
-      }
 
-      // Witness Fee Calculation
-      const witnessCount = counters.witnessCount;
-      const witnessFeeTotal = witnessCount * statutoryActRate;
+        function playCorrectSound() {
+            if (!audioEnabled) return;
+            initAudio();
+            if (!audioCtx) return;
 
-      // BlueNotary Pool Toggle
-      const isBnPoolActive = document.getElementById('toggleBnPool').checked;
-      const bnPoolFeeInputWrapper = document.getElementById('bnPoolFeeInputWrapper');
-      let bnPoolFee = 0.00;
-      if (isBnPoolActive) {
-        if (bnPoolFeeInputWrapper) bnPoolFeeInputWrapper.classList.remove('hidden');
-        bnPoolFee = parseFloat(document.getElementById('bnPoolFeeInput').value) || 10.00;
-        document.getElementById('bnPoolDisplayFee').innerText = `$${bnPoolFee.toFixed(2)}`;
-      } else {
-        if (bnPoolFeeInputWrapper) bnPoolFeeInputWrapper.classList.add('hidden');
-      }
+            try {
+                // Dual ascending chime
+                const now = audioCtx.currentTime;
+                const osc1 = audioCtx.createOscillator();
+                const osc2 = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
 
-      // Additional Acts Calculation
-      const extraActsCount = counters.extraActsCount;
-      const extraActsFeeTotal = extraActsCount * statutoryActRate;
+                osc1.type = 'sine';
+                osc2.type = 'sine';
 
-      // Extra Signers Calculation
-      const extraSignersCount = counters.extraSignersCount;
-      const extraSignersFeeTotal = extraSignersCount * 20.00;
+                osc1.frequency.setValueAtTime(523.25, now); // C5
+                osc1.frequency.exponentialRampToValueAtTime(659.25, now + 0.12); // E5
 
-      // Toggles
-      const isRushActive = document.getElementById('toggleRush').checked;
-      const rushFee = isRushActive ? 15.00 : 0.00;
+                osc2.frequency.setValueAtTime(659.25, now + 0.12); // E5
+                osc2.frequency.exponentialRampToValueAtTime(783.99, now + 0.25); // G5
 
-      const isPrintScanActive = document.getElementById('togglePrintScan').checked;
-      const printScanFee = isPrintScanActive ? 10.00 : 0.00;
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
 
-      // Custom Line Item
-      const customLabel = document.getElementById('customItemLabel').value.trim();
-      const customAmount = parseFloat(document.getElementById('customItemAmount').value) || 0;
+                osc1.connect(gain);
+                osc2.connect(gain);
+                gain.connect(audioCtx.destination);
 
-      // GRAND TOTAL COMPUTATION
-      const grandTotal = baseCost + travelFee + witnessFeeTotal + bnPoolFee + extraActsFeeTotal + extraSignersFeeTotal + rushFee + printScanFee + (customAmount > 0 ? customAmount : 0);
-
-      // Render Grand Total UI
-      document.getElementById('totalQuoteDisplay').innerText = `$${grandTotal.toFixed(2)}`;
-
-      // Render Breakdown HTML List
-      const breakdownContainer = document.getElementById('breakdownList');
-      let listHtml = '';
-
-      // Base breakdown items
-      baseBreakdown.forEach(item => {
-        listHtml += `
-          <div class="flex justify-between items-center text-parchment-200">
-            <span>• ${item.name}</span>
-            <span class="text-gold-300 font-semibold">$${item.cost.toFixed(2)}</span>
-          </div>
-        `;
-      });
-
-      // Travel Line
-      if (isMobileService && travelFee > 0) {
-        listHtml += `
-          <div class="flex justify-between items-center text-parchment-200">
-            <span>• ${travelLabel}</span>
-            <span class="text-gold-300 font-semibold">$${travelFee.toFixed(2)}</span>
-          </div>
-        `;
-      }
-
-      // Witnessing
-      if (witnessCount > 0) {
-        listHtml += `
-          <div class="flex justify-between items-center text-parchment-200">
-            <span>• Witnessing (${witnessCount} act${witnessCount > 1 ? 's' : ''} @ $${statutoryActRate.toFixed(2)})</span>
-            <span class="text-gold-300 font-semibold">$${witnessFeeTotal.toFixed(2)}</span>
-          </div>
-        `;
-      }
-
-      // BN Pool
-      if (isBnPoolActive) {
-        listHtml += `
-          <div class="flex justify-between items-center text-parchment-200">
-            <span>• BlueNotary Open Witness Pool</span>
-            <span class="text-gold-300 font-semibold">$${bnPoolFee.toFixed(2)}</span>
-          </div>
-        `;
-      }
-
-      // Additional Acts
-      if (extraActsCount > 0) {
-        listHtml += `
-          <div class="flex justify-between items-center text-parchment-200">
-            <span>• Add'l Notarial Acts (${extraActsCount} @ $${statutoryActRate.toFixed(2)})</span>
-            <span class="text-gold-300 font-semibold">$${extraActsFeeTotal.toFixed(2)}</span>
-          </div>
-        `;
-      }
-
-      // Extra Signers
-      if (extraSignersCount > 0) {
-        listHtml += `
-          <div class="flex justify-between items-center text-parchment-200">
-            <span>• Extra Signers (${extraSignersCount} @ $20.00)</span>
-            <span class="text-gold-300 font-semibold">$${extraSignersFeeTotal.toFixed(2)}</span>
-          </div>
-        `;
-      }
-
-      // Rush Surcharge
-      if (isRushActive) {
-        listHtml += `
-          <div class="flex justify-between items-center text-parchment-200">
-            <span>• Off-Hours / Rush Surcharge</span>
-            <span class="text-gold-300 font-semibold">$${rushFee.toFixed(2)}</span>
-          </div>
-        `;
-      }
-
-      // Print / Scanbacks
-      if (isPrintScanActive) {
-        listHtml += `
-          <div class="flex justify-between items-center text-parchment-200">
-            <span>• Document Printing & Scanback</span>
-            <span class="text-gold-300 font-semibold">$${printScanFee.toFixed(2)}</span>
-          </div>
-        `;
-      }
-
-      // Custom Item
-      if (customAmount > 0) {
-        const itemTitle = customLabel || 'Custom Service Fee';
-        listHtml += `
-          <div class="flex justify-between items-center text-parchment-200">
-            <span>• ${itemTitle}</span>
-            <span class="text-gold-300 font-semibold">$${customAmount.toFixed(2)}</span>
-          </div>
-        `;
-      }
-
-      breakdownContainer.innerHTML = listHtml;
-
-      // Update Benchmark Comparison Badge Text
-      const badge = document.getElementById('publishedRateRangeBadge');
-      if (isMobileService) {
-        if (selectedTier === 'mobile_ipen') {
-          badge.innerText = travelFee >= 35 ? 'Published Mobile IPEN Benchmark Match ($80+)' : 'Mobile IPEN Benchmark ($55 - $80+)';
-        } else {
-          badge.innerText = travelFee >= 35 ? 'Published Pen & Paper Benchmark Match ($50+)' : 'Mobile Paper Benchmark ($50 - $80+)';
+                osc1.start(now);
+                osc1.stop(now + 0.15);
+                osc2.start(now + 0.12);
+                osc2.stop(now + 0.35);
+            } catch(e){}
         }
-      } else {
-        badge.innerText = selectedTier === 'priority_ron' ? 'Priority RON Benchmark ($65.00)' : 'Standard Digital RON Benchmark ($45.00)';
-      }
 
-      // GENERATE CLIENT QUOTE TEXT (STRICTLY NO EM DASHES)
-      generateQuoteText({
-        baseTitle,
-        baseCost,
-        baseBreakdown,
-        isMobileService,
-        travelLabel,
-        travelFee,
-        witnessCount,
-        statutoryActRate,
-        witnessFeeTotal,
-        isBnPoolActive,
-        bnPoolFee,
-        extraActsCount,
-        extraActsFeeTotal,
-        extraSignersCount,
-        extraSignersFeeTotal,
-        isRushActive,
-        rushFee,
-        isPrintScanActive,
-        printScanFee,
-        customLabel,
-        customAmount,
-        grandTotal
-      });
-    }
+        function playIncorrectSound() {
+            if (!audioEnabled) return;
+            initAudio();
+            if (!audioCtx) return;
 
-    // --- CLIENT QUOTE TEXT GENERATOR (STRICTLY NO EM DASHES) ---
-    function generateQuoteText(data) {
-      let lines = [];
-      lines.push("SOUND FOX NOTARY | OFFICIAL FEE QUOTE");
-      lines.push("------------------------------------");
-      lines.push(`Service: ${data.baseTitle}`);
-      lines.push("");
-      lines.push("ITEMIZATION:");
-      
-      data.baseBreakdown.forEach(item => {
-        lines.push(` * ${item.name}: $${item.cost.toFixed(2)}`);
-      });
+            try {
+                // Soft low thud/buzz
+                const now = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
 
-      if (data.isMobileService && data.travelFee > 0) {
-        lines.push(` * ${data.travelLabel}: $${data.travelFee.toFixed(2)}`);
-      }
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(180, now);
+                osc.frequency.exponentialRampToValueAtTime(100, now + 0.2);
 
-      if (data.witnessCount > 0) {
-        lines.push(` * Signature Witnessing (${data.witnessCount} act/s @ $${data.statutoryActRate.toFixed(2)}): $${data.witnessFeeTotal.toFixed(2)}`);
-      }
+                gain.gain.setValueAtTime(0.25, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
 
-      if (data.isBnPoolActive) {
-        lines.push(` * BlueNotary Open Witness Call Pool: $${data.bnPoolFee.toFixed(2)}`);
-      }
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
 
-      if (data.extraActsCount > 0) {
-        lines.push(` * Additional Notarial Acts (${data.extraActsCount} @ $${data.statutoryActRate.toFixed(2)}): $${data.extraActsFeeTotal.toFixed(2)}`);
-      }
+                osc.start(now);
+                osc.stop(now + 0.25);
+            } catch(e){}
+        }
 
-      if (data.extraSignersCount > 0) {
-        lines.push(` * Extra Signer ID Verification (${data.extraSignersCount} @ $20.00): $${data.extraSignersFeeTotal.toFixed(2)}`);
-      }
+        function playFanfareSound() {
+            if (!audioEnabled) return;
+            initAudio();
+            if (!audioCtx) return;
 
-      if (data.isRushActive) {
-        lines.push(` * Off-Hours / Expedited Surcharge: $${data.rushFee.toFixed(2)}`);
-      }
+            try {
+                // Celebratory Arpeggio
+                const now = audioCtx.currentTime;
+                const freqs = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+                freqs.forEach((freq, idx) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, now + idx * 0.08);
 
-      if (data.isPrintScanActive) {
-        lines.push(` * Printing & Scanback Delivery: $${data.printScanFee.toFixed(2)}`);
-      }
+                    gain.gain.setValueAtTime(0.18, now + idx * 0.08);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.3);
 
-      if (data.customAmount > 0) {
-        const title = data.customLabel || 'Custom Service Fee';
-        lines.push(` * ${title}: $${data.customAmount.toFixed(2)}`);
-      }
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
 
-      lines.push("------------------------------------");
-      lines.push(`TOTAL ESTIMATED QUOTE: $${data.grandTotal.toFixed(2)}`);
-      lines.push("");
-      lines.push("Notary acts priced pursuant to WA State WAC 308-30-220. Remote/mobile travel & technology fees confirmed prior to booking.");
-      lines.push("Reply to this message to confirm your appointment window.");
+                    osc.start(now + idx * 0.08);
+                    osc.stop(now + idx * 0.08 + 0.3);
+                });
+            } catch(e){}
+        }
 
-      const fullQuoteText = lines.join("\n");
-      document.getElementById('quoteTextPreview').innerText = fullQuoteText;
-    }
+        /* ==========================================================================
+           4. GAME & ROUND LOGIC
+           ========================================================================== */
+        function initApp() {
+            updateAudioUI();
+            document.getElementById('streakCount').innerText = streak;
+            startNewRound();
+        }
 
-    // --- COPY TO CLIPBOARD FUNCTION ---
-    function copyClientQuote() {
-      const quoteText = document.getElementById('quoteTextPreview').innerText;
-      
-      if (!quoteText) return;
+        function setTopicFilter(topic) {
+            activeFilter = topic;
+            // Update active pill button UI
+            document.querySelectorAll('.topic-btn').forEach(btn => {
+                if (btn.getAttribute('data-topic') === topic) {
+                    btn.className = 'topic-btn active px-3.5 py-1.5 rounded-full text-xs font-semibold bg-limeAcc text-surface-base transition-all shadow-sm';
+                } else {
+                    btn.className = 'topic-btn px-3.5 py-1.5 rounded-full text-xs font-semibold bg-surface-card border border-surface-border text-textMuted hover:text-textMain hover:bg-surface-hover transition-all';
+                }
+            });
+            startNewRound();
+        }
 
-      // Fallback copy using text area execution to handle iframe restrictions reliably
-      const textarea = document.createElement('textarea');
-      textarea.value = quoteText;
-      textarea.style.position = 'fixed';
-      textarea.style.opacity = '0';
-      document.body.appendChild(textarea);
-      textarea.select();
-      
-      let successful = false;
-      try {
-        successful = document.execCommand('copy');
-      } catch (err) {
-        console.error('ExecCommand copy failed', err);
-      }
-      document.body.removeChild(textarea);
+        function startNewRound() {
+            // Filter questions
+            let available = QUESTION_BANK;
+            if (activeFilter !== 'all') {
+                available = QUESTION_BANK.filter(q => q.category === activeFilter);
+            }
 
-      // Display Toast Confirmation
-      const copyToast = document.getElementById('copyToast');
-      if (copyToast) {
-        copyToast.classList.remove('hidden');
-        copyToast.innerText = successful ? '✓ Quote copied to clipboard cleanly!' : 'Selected text - press Ctrl+C / Cmd+C to copy';
-        setTimeout(() => {
-          copyToast.classList.add('hidden');
-        }, 3000);
-      }
-    }
-  </script>
+            // Shuffle & pick 5 questions (or available count if < 5)
+            const shuffled = [...available].sort(() => 0.5 - Math.random());
+            currentRoundQuestions = shuffled.slice(0, 5);
+            currentQuestionIndex = 0;
+            roundScore = 0;
+            missedQuestions = [];
 
+            // UI Reset
+            document.getElementById('roundScore').innerText = `0/${currentRoundQuestions.length}`;
+            document.getElementById('resultsView').classList.add('hidden');
+            document.getElementById('quizView').classList.remove('hidden');
+
+            renderCurrentQuestion();
+        }
+
+        function renderCurrentQuestion() {
+            selectedOptionIndex = null;
+            const q = currentRoundQuestions[currentQuestionIndex];
+
+            // Progress text & segments
+            document.getElementById('progressText').innerText = `Question ${currentQuestionIndex + 1} of ${currentRoundQuestions.length}`;
+            
+            for (let i = 0; i < 5; i++) {
+                const seg = document.getElementById(`segment-${i}`);
+                if (i < currentRoundQuestions.length) {
+                    seg.classList.remove('hidden');
+                    if (i < currentQuestionIndex) {
+                        // previous questions in round
+                        seg.className = "h-full rounded-full bg-limeAcc transition-all duration-300";
+                    } else if (i === currentQuestionIndex) {
+                        // active
+                        seg.className = "h-full rounded-full bg-goldAcc transition-all duration-300 ring-2 ring-goldAcc/30";
+                    } else {
+                        // upcoming
+                        seg.className = "h-full rounded-full bg-surface-border transition-all duration-300";
+                    }
+                } else {
+                    seg.classList.add('hidden');
+                }
+            }
+
+            // Question Card Content
+            document.getElementById('questionCategory').innerText = q.category;
+            document.getElementById('questionLawRef').innerText = q.lawRef;
+            document.getElementById('questionText').innerText = q.question;
+
+            // Render Options (A, B, C, D)
+            const optionsContainer = document.getElementById('optionsContainer');
+            optionsContainer.innerHTML = '';
+
+            const letters = ['A', 'B', 'C', 'D'];
+
+            q.options.forEach((optText, idx) => {
+                const btn = document.createElement('button');
+                btn.id = `option-btn-${idx}`;
+                btn.onclick = () => handleSelectOption(idx);
+                btn.className = `option-card w-full p-3.5 rounded-xl bg-surface-card border border-surface-border hover:border-surface-hover text-left flex items-start gap-3 transition-all duration-200 group active:scale-[0.99]`;
+
+                btn.innerHTML = `
+                    <div id="letter-badge-${idx}" class="w-7 h-7 rounded-full bg-surface-base border border-surface-border text-textMuted font-bold text-xs flex items-center justify-center shrink-0 group-hover:border-limeAcc group-hover:text-limeAcc transition-colors">
+                        ${letters[idx]}
+                    </div>
+                    <div class="flex-1 text-xs sm:text-sm text-textMain leading-snug pt-1">
+                        ${optText}
+                    </div>
+                    <div id="status-icon-${idx}" class="w-6 h-6 rounded-full flex items-center justify-center shrink-0 hidden">
+                    </div>
+                `;
+                optionsContainer.appendChild(btn);
+            });
+
+            // Hide explanation card
+            document.getElementById('explanationCard').classList.add('hidden');
+
+            // Reset Next Button
+            const nextBtn = document.getElementById('nextBtn');
+            nextBtn.disabled = true;
+            nextBtn.className = "w-full py-3.5 px-5 rounded-xl font-bold text-sm bg-surface-hover text-textMuted cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2 shadow-lg";
+            nextBtn.querySelector('span').innerText = "Select an Answer";
+        }
+
+        function handleSelectOption(selectedIndex) {
+            if (selectedOptionIndex !== null) return; // Prevent re-selection
+            selectedOptionIndex = selectedIndex;
+
+            const q = currentRoundQuestions[currentQuestionIndex];
+            const isCorrect = (selectedIndex === q.correctIndex);
+
+            // Audio & Streak Update
+            if (isCorrect) {
+                roundScore++;
+                streak++;
+                playCorrectSound();
+            } else {
+                streak = 0; // Reset streak on mistake
+                playIncorrectSound();
+                missedQuestions.push({
+                    question: q.question,
+                    lawRef: q.lawRef,
+                    userAnswer: q.options[selectedIndex],
+                    correctAnswer: q.options[q.correctIndex],
+                    explanation: q.explanation
+                });
+            }
+
+            // Save streak to localstorage
+            localStorage.setItem('soundfox_streak', streak);
+            document.getElementById('streakCount').innerText = streak;
+            document.getElementById('roundScore').innerText = `${roundScore}/${currentRoundQuestions.length}`;
+
+            // Update Progress Segment Icon Color
+            const currentSeg = document.getElementById(`segment-${currentQuestionIndex}`);
+            if (isCorrect) {
+                currentSeg.className = "h-full rounded-full bg-limeAcc shadow-sm transition-all duration-300";
+            } else {
+                currentSeg.className = "h-full rounded-full bg-red-500 shadow-sm transition-all duration-300";
+            }
+
+            // Update Options Appearance
+            q.options.forEach((_, idx) => {
+                const btn = document.getElementById(`option-btn-${idx}`);
+                const badge = document.getElementById(`letter-badge-${idx}`);
+                const icon = document.getElementById(`status-icon-${idx}`);
+                btn.onclick = null; // Disable further clicks
+
+                if (idx === q.correctIndex) {
+                    // Correct Option Styling
+                    btn.className = "w-full p-3.5 rounded-xl bg-limeAcc/15 border-2 border-limeAcc text-left flex items-start gap-3 transition-all shadow-md";
+                    badge.className = "w-7 h-7 rounded-full bg-limeAcc text-surface-base font-black text-xs flex items-center justify-center shrink-0 shadow";
+                    icon.classList.remove('hidden');
+                    icon.className = "w-6 h-6 rounded-full bg-limeAcc text-surface-base flex items-center justify-center shrink-0 font-bold text-xs";
+                    icon.innerHTML = `<svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>`;
+                } else if (idx === selectedIndex && !isCorrect) {
+                    // Incorrect Selected Option
+                    btn.className = "w-full p-3.5 rounded-xl bg-red-500/15 border-2 border-red-500 text-left flex items-start gap-3 transition-all shadow-md";
+                    badge.className = "w-7 h-7 rounded-full bg-red-500 text-white font-black text-xs flex items-center justify-center shrink-0 shadow";
+                    icon.classList.remove('hidden');
+                    icon.className = "w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center shrink-0 font-bold text-xs";
+                    icon.innerHTML = `<svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>`;
+                } else {
+                    // Unselected options dim
+                    btn.className = "w-full p-3.5 rounded-xl bg-surface-card/50 border border-surface-border/50 text-left flex items-start gap-3 opacity-40";
+                }
+            });
+
+            // Show Interactive Statutory Explanation
+            const expCard = document.getElementById('explanationCard');
+            const expIcon = document.getElementById('explanationIcon');
+            const expTitle = document.getElementById('explanationTitle');
+            const expText = document.getElementById('explanationText');
+
+            expCard.classList.remove('hidden');
+            if (isCorrect) {
+                expCard.className = "bg-limeAcc/10 border border-limeAcc/30 rounded-xl p-4 mb-4 animate-slide-down";
+                expIcon.className = "w-6 h-6 rounded-full bg-limeAcc text-surface-base flex items-center justify-center shrink-0 font-black text-xs mt-0.5";
+                expIcon.innerText = "✓";
+                expTitle.className = "text-xs font-bold uppercase tracking-wider mb-1 text-limeAcc";
+                expTitle.innerText = `Correct • ${q.lawRef}`;
+            } else {
+                expCard.className = "bg-red-500/10 border border-red-500/30 rounded-xl p-4 mb-4 animate-slide-down";
+                expIcon.className = "w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center shrink-0 font-black text-xs mt-0.5";
+                expIcon.innerText = "✕";
+                expTitle.className = "text-xs font-bold uppercase tracking-wider mb-1 text-red-400";
+                expTitle.innerText = `Key Rule • ${q.lawRef}`;
+            }
+            expText.innerText = q.explanation;
+
+            // Enable Next Question Button
+            const nextBtn = document.getElementById('nextBtn');
+            nextBtn.disabled = false;
+            nextBtn.className = "w-full py-3.5 px-5 rounded-xl font-bold text-sm bg-limeAcc hover:bg-limeAcc-light text-surface-base transition-all duration-200 flex items-center justify-center gap-2 shadow-lg active:scale-98 cursor-pointer";
+            
+            if (currentQuestionIndex === currentRoundQuestions.length - 1) {
+                nextBtn.querySelector('span').innerText = "Finish Round";
+            } else {
+                nextBtn.querySelector('span').innerText = "Next Question";
+            }
+        }
+
+        function handleNextQuestion() {
+            if (selectedOptionIndex === null) return;
+
+            if (currentQuestionIndex < currentRoundQuestions.length - 1) {
+                currentQuestionIndex++;
+                renderCurrentQuestion();
+            } else {
+                showResultsScreen();
+            }
+        }
+
+        function showResultsScreen() {
+            document.getElementById('quizView').classList.add('hidden');
+            const resultsView = document.getElementById('resultsView');
+            resultsView.classList.remove('hidden');
+
+            const total = currentRoundQuestions.length;
+            const percentage = Math.round((roundScore / total) * 100);
+
+            document.getElementById('resultsScore').innerText = `${roundScore} / ${total}`;
+            document.getElementById('resultsAccuracy').innerText = `${percentage}%`;
+
+            const headline = document.getElementById('resultsHeadline');
+            const feedbackText = document.getElementById('resultsFeedbackText');
+
+            if (percentage === 100) {
+                headline.innerText = "Flawless Knowledge!";
+                feedbackText.innerText = "Exceptional accuracy! You have demonstrated total mastery over Washington State notary rules and statutory mandates.";
+                playFanfareSound();
+            } else if (percentage >= 80) {
+                headline.innerText = "Sharp Work!";
+                feedbackText.innerText = "Strong execution! You're practicing with high legal precision. Review the missed question to polish your knowledge.";
+                playFanfareSound();
+            } else if (percentage >= 60) {
+                headline.innerText = "Solid Practice!";
+                feedbackText.innerText = "Good effort! Practice makes permanent. Focus on RCW 42.45 statutory details and try another round.";
+            } else {
+                headline.innerText = "Keep Refining!";
+                feedbackText.innerText = "Notary statutes require careful attention to details. Review the statutory breakdowns below and jump back in!";
+            }
+
+            // Render Missed Questions Breakdown
+            const missedSection = document.getElementById('missedQuestionsSection');
+            const missedList = document.getElementById('missedQuestionsList');
+            const missedBadge = document.getElementById('missedCountBadge');
+
+            if (missedQuestions.length > 0) {
+                missedSection.classList.remove('hidden');
+                missedBadge.innerText = missedQuestions.length;
+                missedList.innerHTML = '';
+
+                missedQuestions.forEach((mq) => {
+                    const card = document.createElement('div');
+                    card.className = "bg-surface-card border border-surface-border rounded-lg p-3 text-xs";
+                    card.innerHTML = `
+                        <div class="flex items-center justify-between text-[10px] text-limeAcc font-mono mb-1">
+                            <span>${mq.lawRef}</span>
+                        </div>
+                        <p class="font-semibold text-textMain mb-1.5">${mq.question}</p>
+                        <p class="text-red-400 mb-1"><span class="font-bold">Your Choice:</span> ${mq.userAnswer}</p>
+                        <p class="text-limeAcc mb-2"><span class="font-bold">Correct Answer:</span> ${mq.correctAnswer}</p>
+                        <p class="text-textMuted bg-surface-subtle p-2 rounded border border-surface-border/50 text-[11px] leading-relaxed">${mq.explanation}</p>
+                    `;
+                    missedList.appendChild(card);
+                });
+            } else {
+                missedSection.classList.add('hidden');
+            }
+        }
+
+        // Initialize App on DOM Load
+        window.addEventListener('DOMContentLoaded', initApp);
+    </script>
 </body>
 </html>
